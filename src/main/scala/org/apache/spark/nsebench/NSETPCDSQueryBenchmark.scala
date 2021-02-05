@@ -1,6 +1,5 @@
 package org.apache.spark.nsebench
 
-import org.apache.spark.SparkConf
 import org.apache.spark.benchmark.Benchmark
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.catalog.HiveTableRelation
@@ -13,17 +12,7 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
 
   override def getSparkSession: SparkSession = {
-    val conf = new SparkConf()
-        .setMaster("local[1]")
-        .setAppName("test-sql-context")
-        .set("spark.sql.parquet.compression.codec", "snappy")
-        .set("spark.sql.shuffle.partitions", "4")
-        .set("spark.driver.memory", "3g")
-        .set("spark.executor.memory", "3g")
-        .set("spark.sql.autoBroadcastJoinThreshold", (20 * 1024 * 1024).toString)
-        .set("spark.sql.crossJoin.enabled", "true")
-
-    SparkSession.builder.config(conf).getOrCreate()
+    SparkSession.builder.getOrCreate()
   }
 
   val tables = Seq("catalog_page", "catalog_returns", "customer", "customer_address",
@@ -34,7 +23,7 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
 
   def setupTables(dataLocation: String): Map[String, Long] = {
     tables.map { tableName =>
-      spark.read.parquet(s"$dataLocation/$tableName").createOrReplaceTempView(tableName)
+      spark.read.format("arrow").load(s"$dataLocation/$tableName").createOrReplaceTempView(tableName)
       tableName -> spark.table(tableName).count()
     }.toMap
   }
@@ -61,7 +50,7 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
         case _ =>
       }
       val numRows = queryRelations.map(tableSizes.getOrElse(_, 0L)).sum
-      val benchmark = new Benchmark(s"TPCDS Snappy", numRows, 2, output = output)
+      val benchmark = new Benchmark(s"TPCDS", numRows, 2, output = output)
       benchmark.addCase(s"$name$nameSuffix") { _ =>
         spark.sql(queryString).noop()
       }
