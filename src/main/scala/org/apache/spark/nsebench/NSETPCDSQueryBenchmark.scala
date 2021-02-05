@@ -101,8 +101,8 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
     }
 
     val tableSizes = setupTables(benchmarkArgs.dataLocation)
-    runTpcdsQueries(queryLocation = "tpcds", queries = queriesV1_4ToRun, tableSizes)
-    runTpcdsQueries(queryLocation = "tpcds-v2.7.0", queries = queriesV2_7ToRun, tableSizes,
+    runTpcdsQueries(queryLocation = "tpcds-double", queries = queriesV1_4ToRun, tableSizes)
+    runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
       nameSuffix = "-v2.7")
   }
 }
