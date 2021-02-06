@@ -51,7 +51,8 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
       }
       val numRows = queryRelations.map(tableSizes.getOrElse(_, 0L)).sum
       val benchmark = new Benchmark(s"TPCDS", numRows, 2, output = output)
-      benchmark.addCase(s"$name$nameSuffix") { _ =>
+      benchmark.addCase(s"$name$nameSuffix") { i =>
+        spark.sparkContext.setJobDescription("TPCDS %s ITERATION %d".format(name, i))
         spark.sql(queryString).noop()
       }
       benchmark.run()
@@ -104,5 +105,6 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
     runTpcdsQueries(queryLocation = "tpcds-double", queries = queriesV1_4ToRun, tableSizes)
     runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
       nameSuffix = "-v2.7")
+    Thread.sleep(3600000L)
   }
 }
