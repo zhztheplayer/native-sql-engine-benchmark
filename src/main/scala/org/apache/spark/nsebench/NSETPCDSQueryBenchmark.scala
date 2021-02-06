@@ -1,12 +1,17 @@
 package org.apache.spark.nsebench
 
-import org.apache.spark.benchmark.Benchmark
+import java.util.Locale
+
+import org.apache.spark.SparkContext
+import org.apache.spark.benchmark.{Benchmark, BenchmarkBase}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.catalog.HiveTableRelation
 import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias
 import org.apache.spark.sql.catalyst.util.resourceToString
 import org.apache.spark.sql.execution.benchmark.{SqlBasedBenchmark, TPCDSQueryBenchmarkArguments}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+
+import scala.collection.mutable.ListBuffer
 
 
 object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
@@ -76,8 +81,33 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
     }
   }
 
+  private def optionMatch(optionName: String, s: String): Boolean = {
+    optionName == s.toLowerCase(Locale.ROOT)
+  }
+
+  var ENABLE_V2_7 = false
+
   override def runBenchmarkSuite(mainArgs: Array[String]): Unit = {
-    val benchmarkArgs = new TPCDSQueryBenchmarkArguments(mainArgs)
+    var argList = mainArgs.toList
+    val tmpBenchArgs: ListBuffer[String] = ListBuffer()
+
+    while (argList.nonEmpty) {
+      argList match {
+        case optName :: value :: tail if optionMatch("--data-location", optName) =>
+          argList = tail
+          tmpBenchArgs.append(optName, value)
+        case optName :: value :: tail if optionMatch("--query-filter", optName) =>
+          argList = tail
+          tmpBenchArgs.append(optName, value)
+        case optName :: tail if optionMatch("--enable-v2.7", optName) =>
+          argList = tail
+          ENABLE_V2_7 = true
+        case _ =>
+          throw new IllegalArgumentException("Unrecognizable options: " + argList)
+      }
+    }
+
+    val benchmarkArgs = new TPCDSQueryBenchmarkArguments(tmpBenchArgs.toArray)
 
     // List of all TPC-DS v1.4 queries
     val tpcdsQueries = Seq(
@@ -110,7 +140,9 @@ object NSETPCDSQueryBenchmark extends SqlBasedBenchmark {
 
     val tableSizes = setupTables(benchmarkArgs.dataLocation)
     runTpcdsQueries(queryLocation = "tpcds-double", queries = queriesV1_4ToRun, tableSizes)
-//    runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
-//      nameSuffix = "-v2.7")
+    if (ENABLE_V2_7) {
+      runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
+        nameSuffix = "-v2.7")
+    }
   }
 }
