@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export SPARK_GENERATE_BENCHMARK_FILES=1
+mkdir -p benchmarks/
+
 SPARK_HOME={{PATH TO SPARK BINARY}}
 ARROW_HOME={{PATH TO ARROW BINARY}}
 
@@ -21,6 +24,10 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --driver-memory 3g \
   --executor-memory 3g \
   --executor-cores 4 \
+  --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=10g" \
+  --conf spark.executor.memoryOverhead=5g \
+  --conf spark.memory.offHeap.enabled=true \
+  --conf spark.memory.offHeap.size=10g \
   --conf spark.sql.extensions=com.intel.oap.ColumnarPlugin \
   --conf spark.shuffle.manager=org.apache.spark.shuffle.sort.ColumnarShuffleManager \
   --conf spark.sql.columnar.codegen.hashAggregate=false \
@@ -31,9 +38,6 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.sql.inMemoryColumnarStorage.batchSize=${BATCH_SIZE} \
   --conf spark.sql.parquet.columnarReaderBatchSize=${BATCH_SIZE} \
   --conf spark.sql.execution.arrow.maxRecordsPerBatch=${BATCH_SIZE} \
-  --conf spark.executor.memoryOverhead=5g \
-  --conf spark.memory.offHeap.enabled=true \
-  --conf spark.memory.offHeap.size=10g \
   --conf spark.oap.commitid=7abeafbb5391501d49e9e5e357f7efa77afe885c \
   --conf spark.oap.sql.columnar.preferColumnar=true \
   --conf spark.oap.sql.columnar.wholestagecodegen=true \
