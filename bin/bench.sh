@@ -40,7 +40,6 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.sql.inMemoryColumnarStorage.batchSize=${BATCH_SIZE} \
   --conf spark.sql.parquet.columnarReaderBatchSize=${BATCH_SIZE} \
   --conf spark.sql.execution.arrow.maxRecordsPerBatch=${BATCH_SIZE} \
-  --conf spark.oap.commitid=7abeafbb5391501d49e9e5e357f7efa77afe885c \
   --conf spark.oap.sql.columnar.preferColumnar=true \
   --conf spark.oap.sql.columnar.wholestagecodegen=true \
   --conf spark.oap.sql.columnar.hashCompare=true \
@@ -50,6 +49,6 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.driver.extraClassPath=$BENCH_JAR \
   --conf spark.executor.extraClassPath=$BENCH_JAR \
   --conf spark.executorEnv.LIBARROW_DIR=$ARROW_HOME \
-  --class org.apache.spark.nsebench.NSETPCDSQueryBenchmark \
+  --class org.apache.spark.nsebench.TPCDSNative \
   $BENCH_JAR \
   "$@"
