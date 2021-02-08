@@ -19,15 +19,17 @@ BATCH_SIZE=10240
 echo "Using \`spark-submit\` from path: $SPARK_HOME" 1>&2
 exec "${SPARK_HOME}"/bin/spark-submit \
   --name tpcds-hongze \
-  --master spark://localhost:7077 \
-  --num-executors 2 \
+  --master local[*] \
+  --num-executors 1 \
   --driver-memory 3g \
-  --executor-memory 3g \
+  --executor-memory 6g \
   --executor-cores 4 \
-  --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=10g" \
+  --conf spark.sql.files.maxPartitionBytes=384MB \
+  --conf spark.sql.shuffle.partitions=288 \
+  --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=16g" \
   --conf spark.executor.memoryOverhead=5g \
   --conf spark.memory.offHeap.enabled=true \
-  --conf spark.memory.offHeap.size=10g \
+  --conf spark.memory.offHeap.size=16g \
   --conf spark.sql.extensions=com.intel.oap.ColumnarPlugin \
   --conf spark.shuffle.manager=org.apache.spark.shuffle.sort.ColumnarShuffleManager \
   --conf spark.sql.columnar.codegen.hashAggregate=false \
