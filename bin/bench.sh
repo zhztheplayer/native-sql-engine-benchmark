@@ -52,6 +52,7 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.executorEnv.LIBARROW_DIR=$ARROW_HOME \
   --conf spark.executorEnv.MALLOC_ARENA_MAX=$MALLOC_ARENAS \
   --conf spark.executorEnv.MALLOC_CONF=narenas:$MALLOC_ARENAS \
+  --conf spark.sql.sources.useV1SourceList=arrow,parquet \
   --class org.apache.spark.nsebench.TPCDSNative \
   $BENCH_JAR \
   "$@"

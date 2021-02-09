@@ -34,6 +34,7 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.executor.extraClassPath=$BENCH_JAR \
   --conf spark.executorEnv.MALLOC_ARENA_MAX=$MALLOC_ARENAS \
   --conf spark.executorEnv.MALLOC_CONF=narenas:$MALLOC_ARENAS \
+  --conf spark.sql.sources.useV1SourceList=arrow,parquet \
   --class org.apache.spark.nsebench.TPCDSVanilla \
   $BENCH_JAR \
   --use-parquet-format \

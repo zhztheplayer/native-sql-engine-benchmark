@@ -26,10 +26,14 @@ class TPCDSBenchmarkBase extends SqlBasedBenchmark {
     "web_returns", "web_site", "reason", "call_center", "warehouse", "ship_mode", "income_band",
     "time_dim", "web_page")
 
-  def setupTables(dataLocation: String, format: String): Map[String, Long] = {
+  def setupTables(dataLocation: String, format: String, enablePerRowStats: Boolean): Map[String, Long] = {
     tables.map { tableName =>
       spark.read.format(format).load(s"$dataLocation/$tableName").createOrReplaceTempView(tableName)
-      tableName -> spark.table(tableName).count()
+      tableName -> (if (enablePerRowStats) {
+        spark.table(tableName).count()
+      } else {
+        0L
+      })
     }.toMap
   }
 
@@ -87,6 +91,7 @@ class TPCDSBenchmarkBase extends SqlBasedBenchmark {
 
   var ENABLE_V2_7 = false
   var USE_PARQUET_FORMAT = false
+  var ENABLE_PER_ROW_STATS = false
 
   override def runBenchmarkSuite(mainArgs: Array[String]): Unit = {
     var argList = mainArgs.toList
@@ -106,6 +111,9 @@ class TPCDSBenchmarkBase extends SqlBasedBenchmark {
         case optName :: tail if optionMatch("--use-parquet-format", optName) =>
           argList = tail
           USE_PARQUET_FORMAT = true
+        case optName :: tail if optionMatch("--enable-per-row-stats", optName) =>
+          argList = tail
+          ENABLE_PER_ROW_STATS = true
         case _ =>
           throw new IllegalArgumentException("Unrecognizable options: " + argList)
       }
@@ -143,7 +151,7 @@ class TPCDSBenchmarkBase extends SqlBasedBenchmark {
     }
 
     val format = if(USE_PARQUET_FORMAT) "parquet" else "arrow"
-    val tableSizes = setupTables(benchmarkArgs.dataLocation, format)
+    val tableSizes = setupTables(benchmarkArgs.dataLocation, format, ENABLE_PER_ROW_STATS)
     runTpcdsQueries(queryLocation = "tpcds-double", queries = queriesV1_4ToRun, tableSizes)
     if (ENABLE_V2_7) {
       runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
