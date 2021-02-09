@@ -15,6 +15,7 @@ SCRIPT_DIR=$(cd `dirname $0` && pwd)
 BENCH_JAR=$SCRIPT_DIR/../target/native-sql-engine-benchmark-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 
 BATCH_SIZE=10240
+MALLOC_ARENAS=4
 
 echo "Using \`spark-submit\` from path: $SPARK_HOME" 1>&2
 exec "${SPARK_HOME}"/bin/spark-submit \
@@ -26,7 +27,7 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --executor-cores 4 \
   --conf spark.sql.files.maxPartitionBytes=384MB \
   --conf spark.sql.shuffle.partitions=288 \
-  --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=16g" \
+  --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=16g -Dio.netty.allocator.numDirectArena=${MALLOC_ARENAS}" \
   --conf spark.executor.memoryOverhead=5g \
   --conf spark.memory.offHeap.enabled=true \
   --conf spark.memory.offHeap.size=16g \
@@ -49,6 +50,8 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --conf spark.driver.extraClassPath=$BENCH_JAR \
   --conf spark.executor.extraClassPath=$BENCH_JAR \
   --conf spark.executorEnv.LIBARROW_DIR=$ARROW_HOME \
+  --conf spark.executorEnv.MALLOC_ARENA_MAX=$MALLOC_ARENAS \
+  --conf spark.executorEnv.MALLOC_CONF=narenas:$MALLOC_ARENAS \
   --class org.apache.spark.nsebench.TPCDSNative \
   $BENCH_JAR \
   "$@"
