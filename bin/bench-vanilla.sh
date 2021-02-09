@@ -23,8 +23,8 @@ exec "${SPARK_HOME}"/bin/spark-submit \
   --driver-memory 3g \
   --executor-memory 16g \
   --executor-cores 4 \
-  --conf spark.sql.files.maxPartitionBytes=128MB \
-  --conf spark.sql.shuffle.partitions=12 \
+  --conf spark.sql.files.maxPartitionBytes=384MB \
+  --conf spark.sql.shuffle.partitions=288 \
   --conf spark.executor.extraJavaOptions="-XX:MaxDirectMemorySize=6g -Dio.netty.allocator.numDirectArena=${MALLOC_ARENAS}" \
   --conf spark.executor.memoryOverhead=5g \
   --conf spark.memory.offHeap.enabled=false \
