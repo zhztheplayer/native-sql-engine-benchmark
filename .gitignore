@@ -103,3 +103,5 @@ spark-warehouse/
 
 # For SBT
 .jvmopts
+
+benchmarks/
