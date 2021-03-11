@@ -152,9 +152,9 @@ class TPCDSBenchmarkBase extends SqlBasedBenchmark {
 
     val format = if(USE_PARQUET_FORMAT) "parquet" else "arrow"
     val tableSizes = setupTables(benchmarkArgs.dataLocation, format, ENABLE_PER_ROW_STATS)
-    runTpcdsQueries(queryLocation = "tpcds-double", queries = queriesV1_4ToRun, tableSizes)
+    runTpcdsQueries(queryLocation = "tpcds", queries = queriesV1_4ToRun, tableSizes)
     if (ENABLE_V2_7) {
-      runTpcdsQueries(queryLocation = "tpcds-v2.7.0-double", queries = queriesV2_7ToRun, tableSizes,
+      runTpcdsQueries(queryLocation = "tpcds-v2.7.0", queries = queriesV2_7ToRun, tableSizes,
         nameSuffix = "-v2.7")
     }
   }
